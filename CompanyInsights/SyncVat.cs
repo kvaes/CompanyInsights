@@ -62,16 +62,59 @@ namespace CompanyInsights
             client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json")
                 );
+            CancellationToken cts;
             HttpResponseMessage response = await client.GetAsync(CompanyFinancialsApiPath);
             if (response.IsSuccessStatusCode)
             {
                 CompanyFinancialsRoot result = await response.Content.ReadAsAsync<CompanyFinancialsRoot>();
+                string ResultYear;
                 foreach (CompanyFinancialsYear details in result.list) { 
-                    log.LogInformation(result.ToString());
+                    if (!DoesCompanyFinancialsYearExist(log, InputVAT, details.year.ToString())) {
+                        ResultYear = details.year.ToString();
+                        log.LogInformation($"Syncing year {ResultYear} of VAT {InputVAT}");
+                        /*log.LogInformation(ParseCompanyFinancialsDetail(details.employees).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.turnover).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.equity).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.current_assets).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.gross_operating_margin).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.tangible_fixed_assets).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.gain_loss_period).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.current_ratio).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.net_cash).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.self_financing_degree).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.return_on_equity).ToString());
+                        log.LogInformation(ParseCompanyFinancialsDetail(details.added_value).ToString());*/
+                        CompanyFinancials CF = new CompanyFinancials
+                        {
+                            ID = Guid.NewGuid(),
+                            VAT = InputVAT,
+                            Year = ResultYear,
+                            Employees = ParseCompanyFinancialsDetail(details.employees),
+                            Turnover = ParseCompanyFinancialsDetail(details.turnover),
+                            Equity = ParseCompanyFinancialsDetail(details.equity),
+                            CurrentAssets = ParseCompanyFinancialsDetail(details.current_assets),
+                            GrossOperatingMargin = ParseCompanyFinancialsDetail(details.gross_operating_margin),
+                            TangibleFixedAssets = ParseCompanyFinancialsDetail(details.tangible_fixed_assets),
+                            GainLossPeriod = ParseCompanyFinancialsDetail(details.gain_loss_period),
+                            CurrentRatio = ParseCompanyFinancialsDetail(details.current_ratio),
+                            NetCash = ParseCompanyFinancialsDetail(details.net_cash),
+                            SelfFinancingDegree = ParseCompanyFinancialsDetail(details.self_financing_degree),
+                            ReturnOnEquity = ParseCompanyFinancialsDetail(details.return_on_equity),
+                            AddedValue = ParseCompanyFinancialsDetail(details.added_value)
+                        };
+                        var entity = await _context.CompanyFinancials.AddAsync(CF, cts);
+                        await _context.SaveChangesAsync(cts);
+                    }
                 }
             }
-            //DoesCompanyFinancialsExist(log, "test", "2018");
-            //DoesCompanyFinancialsExist(log, "test", "2019");
+        }
+
+        public Decimal ParseCompanyFinancialsDetail(dynamic detail) {
+            if (detail != null) {
+                return Decimal.Parse(Convert.ToString(detail));
+            } else {
+                return 0;
+            }
         }
 
         public bool DoesCompanyFinancialsYearExist(ILogger log, string InputVAT, string InputYear) {

@@ -38,12 +38,10 @@ namespace CompanyInsights
         public decimal TangibleFixedAssets { get; set; }
         public decimal GainLossPeriod { get; set; }
         public decimal CurrentRatio { get; set; }
-
         public decimal NetCash { get; set; }
         public decimal SelfFinancingDegree { get; set; }
         public decimal ReturnOnEquity { get; set; }
         public decimal AddedValue { get; set; }
-
     }
 
     public class CompanyFinancialsYear
